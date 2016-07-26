@@ -25,7 +25,7 @@ module.exports = function(grunt) {
           cb(response);
         }
       })
-    }, purgeResult.pingAfterSeconds)
+    }, purgeResult.pingAfterSeconds * 1000)
   }
 
   grunt.registerMultiTask('akamai_ccu_purge', 'Purge/Invalidate Akamai', function() {
