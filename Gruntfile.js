@@ -12,6 +12,18 @@ module.exports = function(grunt) {
 
   // Project configuration.
   grunt.initConfig({
+    akamai_ccu_purge: {
+      default_options: {
+        clientToken: "akab-XXXXX",
+        clientSecret: "XXXX",
+        accessToken: "akab-XXXX",
+        baseUri: "https://akab-XXXX.purge.akamaiapis.net/",
+        purgeData: {
+          baseUri: "",
+          objects: ["urlList"]
+        }
+      }
+    },
     jshint: {
       all: [
         'Gruntfile.js',
@@ -27,27 +39,6 @@ module.exports = function(grunt) {
     clean: {
       tests: ['tmp']
     },
-
-    // Configuration to be run (and then tested).
-    akamai_ccu_purge: {
-      default_options: {
-        options: {
-        },
-        files: {
-          'tmp/default_options': ['test/fixtures/testing', 'test/fixtures/123']
-        }
-      },
-      custom_options: {
-        options: {
-          separator: ': ',
-          punctuation: ' !!!'
-        },
-        files: {
-          'tmp/custom_options': ['test/fixtures/testing', 'test/fixtures/123']
-        }
-      }
-    },
-
     // Unit tests.
     nodeunit: {
       tests: ['test/*_test.js']

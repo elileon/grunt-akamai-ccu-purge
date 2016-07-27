@@ -7,19 +7,30 @@
  */
 
 'use strict';
-
 module.exports = function(grunt) {
 
   var Purger = require('akamai-ccu-edgegrid-purge');
+  var colors = require('colors');
+
+  colors.setTheme({
+    verbose: 'cyan',
+    info: 'green',
+    error: 'red'
+  });
+
+  var Spinner = require('cli-spinner').Spinner;
+  var spinner = new Spinner(colors.rainbow('Waiting..') + " %s  ");
+  spinner.setSpinnerString(18);
 
   function checkPurgeStatus(currentPurger, purgeResult, cb){
-    grunt.log.write("Checking status in " + purgeResult.pingAfterSeconds + " seconds.");
-
+    console.log(colors.verbose("Checking status in " + purgeResult.pingAfterSeconds + " seconds.\n"));
+    spinner.start();
     setTimeout(function(){
-      grunt.log.write("Checking status.");
+      spinner.stop();
+      console.log(colors.verbose("\nChecking status."));
       currentPurger.checkPurgeStatus(purgeResult.progressUri, function(response){
         if(response.purgeStatus !== 'Done'){
-          grunt.log.write("Purge status: " + response.purgeStatus);
+          console.log(colors.verbose("Purge status: " + response.purgeStatus));
           checkPurgeStatus(currentPurger, purgeResult, cb);
         } else {
           cb(response);
@@ -43,16 +54,23 @@ module.exports = function(grunt) {
 
     thisPurge.invalidate(data.purgeData, function (purgeresult) {
       if(purgeresult.httpStatus !== 201){
-        grunt.log.error(purgeresult.detail);
+        console.log(colors.error.underline("Error in purge request:"));
+        console.log(colors.error("Http status: " + purgeresult.httpStatus));
+        console.log(colors.error("Title: " + purgeresult.title));
+        console.log(colors.error("Detail: " + purgeresult.detail));
+        grunt.fail.fatal("Purge request failed.");
         return;
       }
 
-      grunt.log.write("Request accepted. Estimated time" + purgeresult.estimatedSeconds + " Seconds");
-
-      checkPurgeStatus(thisPurge, purgeresult, function(statusResult){
-        grunt.log.ok("Purge status: " + statusResult.purgeStatus);
+      console.log(colors.verbose.bold("Request accepted, estimated time " + purgeresult.estimatedSeconds + " Seconds"));
+      if(!data.v3){
+        checkPurgeStatus(thisPurge, purgeresult, function(statusResult){
+          console.log(colors.info("Purge status: " + statusResult.purgeStatus));
+          done('Purge request finished!');
+        });
+      } else {
         done('Purge request finished!');
-      });
+      }
     });
 
   });
